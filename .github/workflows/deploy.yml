@@ -21,11 +21,14 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore FileWatcherService.csproj
 
-      - name: Build and Publish
-        run: dotnet publish FileWatcherService.csproj -c Release -o C:\Services\FileWatcherService
+      - name: Build and Publish to temp
+        run: dotnet publish FileWatcherService.csproj -c Release -o C:\Services\FileWatcherService_temp
 
       - name: Stop Windows Service
         run: Stop-Service -Name "FileWatcherService" -Force -ErrorAction SilentlyContinue
+
+      - name: Copy files to production
+        run: Copy-Item -Path "C:\Services\FileWatcherService_temp\*" -Destination "C:\Services\FileWatcherService\" -Recurse -Force -Exclude "appsettings.json"
 
       - name: Start Windows Service
         run: Start-Service -Name "FileWatcherService"
