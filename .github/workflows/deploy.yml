@@ -1,0 +1,31 @@
+name: Deploy to Azure VM                                                                          
+                                                                                                    
+  on:
+    push:
+      branches:
+        - main
+
+  jobs:
+    deploy:
+      runs-on: [self-hosted, JC-ICHT]
+
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+
+        - name: Setup .NET
+          uses: actions/setup-dotnet@v4
+          with:
+            dotnet-version: '8.0.x'
+
+        - name: Restore dependencies
+          run: dotnet restore
+
+        - name: Build and Publish
+          run: dotnet publish -c Release -o C:\Services\FileWatcherService
+
+        - name: Stop Windows Service
+          run: Stop-Service -Name "FileWatcherService" -Force -ErrorAction SilentlyContinue
+
+        - name: Start Windows Service
+          run: Start-Service -Name "FileWatcherService"
